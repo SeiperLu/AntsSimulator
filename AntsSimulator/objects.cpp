@@ -4,296 +4,229 @@
 #include <random>
 #include <algorithm>
 #include <utility>
+#include "objects.h"
 
-enum { NoFoods, Foods };
-class Trace
+Ant::Ant(std::vector<Trace>& Traces,Nest &Ne)
 {
-public:
-	Trace() = default;
-
-	Trace(double x, double y, int food);
-	Trace(const Trace& tr);
-	Trace& operator=(const Trace& tr);
-	Trace(Trace&&) = default;
-	Trace& operator=(Trace&&) = default;
-	~Trace() = default;
-
-	void add(double x, double y);
-	void changeMark(double x, double y, int trace_type);
-	bool is_path_to_nest(double x, double y, int on_food) const;
-	bool is_path_to_food(double x, double y, int on_food) const;
-	std::pair<double, double> next(double x, double y, int on_food) const;
-	std::pair<double, double> previous(double x, double y, int on_food) const;
-	void remove_last();
-	
-private:
-	std::vector<std::tuple<double, double, int>> trace;
-};
-
-class Nest
-{
-public:
-	Nest() :x(0), y(0), count(0) {};
-	Nest(double x, double y, double count) :x(x), y(y), count(count) {};
-	void take(double count_given);
-
-private:
-	double x;
-	double y;
-	double count;
-};
-
-class Food
-{
-public:
-	Food() :x(0), y(0), size(0), count(0) {};
-	Food(double x, double y, int size, double count) :x(x), y(y), size(size), count(count) {};
-	double reduceFood();
-	void reSize();
-	bool atFood(double x_given, double y_given);
-
-private:
-	double count;
-	int size;
-	double x;
-	double y;
-};
-
-class Ant
-{
-public:
-	Ant(std::vector<Trace>& traces, Nest& ne);
-	Ant(int x_given, int y_given, std::vector<Trace>& traces, Nest& ne);
-	void move(std::vector<Trace>& traces, std::vector<Food>& foods);
-	void takeFood(Food& fd);
-	void giveFood();
-	~Ant();
-private:
-	enum {NoCarrying,Carry};
-
-
-	double x;
-	double y;
-	int carry;
-	double food;
-	Trace *traked_trace;
-	Nest *traked_nest;
-};
-
-
-
-Ant::Ant(std::vector<Trace>& traces,Nest &ne)
-{
-	x = 0;
-	y = 0;
-	carry = NoCarrying;
-	food = 0;
-	traked_trace = new Trace(x,y, NoFoods);
-	traces.push_back(*traked_trace);
-	traked_nest = new Nest();
-	*traked_nest = ne;
+	X = 0;
+	Y = 0;
+    Carry = No_Carrying;
+	Food = 0;
+	Traked_Trace = new Trace(X, Y, No_Foods);
+	Traces.push_back(*Traked_Trace);
+	Traked_Nest = new Nest();
+	*Traked_Nest = Ne;
 }
 
-Ant::Ant(int x_given, int y_given, std::vector<Trace>& traces, Nest &ne)
+Ant::Ant(int X_Given, int Y_Given, std::vector<Trace>& Traces, Nest &Ne)
 {
-	x = x_given;
-	y = y_given;
-	carry = NoCarrying;
-	food = 0;
-	traked_trace = new Trace(x, y, NoFoods);
-	traces.push_back(*traked_trace);
-	traked_nest = new Nest();
-	*traked_nest = ne;
+	X = Y_Given;
+	Y = Y_Given;
+    Carry = No_Carrying;
+	Food = 0;
+	Traked_Trace = new Trace(X, Y, No_Foods);
+	Traces.push_back(*Traked_Trace);
+	Traked_Nest = new Nest();
+	*Traked_Nest = Ne;
 }
 
 
-void Ant::takeFood(Food& fd)
+void Ant::Take_Food(class Food &Fd)
 {
-	carry = Carry;
-	food += fd.reduceFood();
+    Carry = Carrying;
+	Food += Fd.Reduce_Food();
 }
 
-void Ant::giveFood()
+void Ant::Give_Food()
 {
-	traked_nest->take(food);
-	food = 0;
-	carry = NoCarrying;
+	Traked_Nest->Take(Food);
+	Food = 0;
+    Carry = No_Carrying;
 }
 
-void Ant::move(std::vector<Trace> &traces, std::vector<Food> &foods)
+void Ant::move(std::vector<Trace> &Traces, std::vector<class Food> &foods)
 {
-	double shift_x, shift_y;
+	double Shift_X, Shift_Y;
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_int_distribution<> distr(-2, 2);
-	shift_x = distr(gen);
-	shift_y = distr(gen);
-	if (carry == NoCarrying)
+	std::uniform_int_distribution<> Distr(-2, 2);
+    Shift_X = Distr(gen);
+    Shift_Y = Distr(gen);
+	if (Carrying == No_Carrying)
 	{
-		if (traked_trace->is_path_to_food(x, y, Foods))
+		if (Traked_Trace->Is_Path_To_Food(X, Y, Foods))
 		{
-			std::pair<double, double> next_coordinates = traked_trace->next(x, y, Foods);
-			x = next_coordinates.first;
-			y = next_coordinates.second;
+			std::pair<double, double> Next_Coordinates = Traked_Trace->Next(X, Y, Foods);
+			X = Next_Coordinates.first;
+			Y = Next_Coordinates.second;
 			return;
 		}
 		else
 		{
 			for (auto it = foods.begin(); it != foods.end(); it++)
 			{
-				if (it->atFood(x, y))
+				if (it->At_Food(X, Y))
 				{
-					takeFood(*it);
-					traked_trace->changeMark(x, y,Foods);
+					Take_Food(*it);
+					Traked_Trace->Change_Mark(X, Y,Foods);
 					return;
 				}
 			}
-			for (auto it = traces.begin(); it != traces.end(); it++)
+			for (auto it = Traces.begin(); it != Traces.end(); it++)
 			{
-				if (it->is_path_to_food(x, y, Foods))
+				if (it->Is_Path_To_Food(X, Y, Foods))
 				{
-					*traked_trace = *it;
+					*Traked_Trace = *it;
 					return;
 				}
 				
 			}
 		}
-		Trace temporal_trace(*traked_trace);
-		traked_trace->remove_last();
-		*traked_trace = temporal_trace;
-		traked_trace->add(x + shift_x, y + shift_y);
+		Trace Temporal_Trace(*Traked_Trace);
+		Traked_Trace->Remove_Last();
+		*Traked_Trace = Temporal_Trace;
+		Traked_Trace->Add(X + Shift_X, Y + Shift_Y);
 	}
 	else
 	{
-		if (traked_trace->is_path_to_nest(x, y, Foods))
+		if (Traked_Trace->Is_Path_To_Nest(X, Y, Foods))
 		{
-			std::pair<double, double> next_coordinates = traked_trace->previous(x, y, Foods);
-			x = next_coordinates.first;
-			y = next_coordinates.second;
-			traked_trace->changeMark(x, y, Foods);
+			std::pair<double, double> Next_Coordinates = Traked_Trace->Previous(X, Y, Foods);
+			X = Next_Coordinates.first;
+			Y = Next_Coordinates.second;
+			Traked_Trace->Change_Mark(X, Y, Foods);
 			return;
 		}
 		else
-			giveFood();
+			Give_Food();
 	}
 
 }
 
-Trace::Trace(double x, double y, int food)
+double Ant::Ant_X()
 {
-	if(food==NoFoods || food==Foods)
-		trace.push_back(std::make_tuple(x, y, food));
+	return X;
+}
+double Ant::Ant_Y()
+{
+	return Y;
+}
+
+Trace::Trace(double X, double Y, int Food)
+{
+	if(Food == No_Foods || Food == Foods)
+		trace.push_back(std::make_tuple(X, Y, Food));
 	else
-		trace.push_back(std::make_tuple(x, y, NoFoods));
+		trace.push_back(std::make_tuple(X, Y, No_Foods));
 }
 
-void Trace::add(double x, double y)
+void Trace::Add(double X, double Y)
 {
-	trace.push_back(std::make_tuple(x, y, NoFoods));
+	trace.push_back(std::make_tuple(X, Y, No_Foods));
 }
 
-void Trace::changeMark(double x, double y, int trace_type)
+void Trace::Change_Mark(double X, double Y, int Trace_Type)
 {
-	auto it = std::find(trace.begin(), trace.end(), std::make_tuple(x, y, NoFoods));
+	auto it = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, No_Foods));
 	if (it != trace.end())
 	{
-		*it = std::make_tuple(x, y, trace_type);
+		*it = std::make_tuple(X, Y, Trace_Type);
 		return;
 	}
-	auto it2 = std::find(trace.begin(), trace.end(), std::make_tuple(x, y, Foods));
+	auto it2 = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, Foods));
 	if (it2 != trace.end())
-		*it2 = std::make_tuple(x, y, trace_type);		
+		*it2 = std::make_tuple(X, Y, Trace_Type);		
 }
 
-bool Trace::is_path_to_nest(double x, double y, int on_food) const
+bool Trace::Is_Path_To_Nest(double X, double Y, int On_Food) const
 {
-	auto position = std::find(trace.begin(), trace.end(), std::make_tuple(x, y, on_food));
-	if (position != trace.begin() && position != trace.end())
+	auto Position = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, On_Food));
+	if (Position != trace.begin() && Position != trace.end())
 		return true;
 	else
 		return false;
 }
 
-bool Trace::is_path_to_food(double x, double y, int on_food) const
+bool Trace::Is_Path_To_Food(double X, double Y, int On_Food) const
 {
-	auto position = std::find(trace.begin(), trace.end(), std::make_tuple(x, y, on_food));
-	if (position != trace.end() && position+1 != trace.end())
+	auto Position = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, On_Food));
+	if (Position != trace.end() && Position + 1 != trace.end())
 		return true;
 	else
 		return false;
 }
 
-std::pair<double, double> Trace::next(double x, double y, int on_food) const
+std::pair<double, double> Trace::Next(double X, double Y, int On_Food) const
 {
-	auto position = std::find(trace.begin(), trace.end(), std::make_tuple(x, y, on_food));
-	if (position != trace.end() && position + 1 != trace.end())
-		return std::make_pair(std::get<0>(*(position + 1)), (std::get<1>(*(position + 1))));
+	auto Position = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, On_Food));
+	if (Position != trace.end() && Position + 1 != trace.end())
+		return std::make_pair(std::get<0>(*(Position + 1)), (std::get<1>(*(Position + 1))));
 }
 
-std::pair<double, double> Trace::previous(double x, double y, int on_food) const
+std::pair<double, double> Trace::Previous(double X, double Y, int On_Food) const
 {
-	auto position = std::find(trace.begin(), trace.end(), std::make_tuple(x, y, on_food));
-	if (position != trace.end() && position != trace.begin())
-		return std::make_pair(std::get<0>(*(position - 1)), (std::get<1>(*(position - 1))));
+	auto Position = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, On_Food));
+	if (Position != trace.end() && Position != trace.begin())
+		return std::make_pair(std::get<0>(*(Position - 1)), (std::get<1>(*(Position - 1))));
 }
 
-void Trace::remove_last()
+void Trace::Remove_Last()
 {
 	trace.pop_back();
 }
 
-Trace::Trace(const Trace& tr)
+Trace::Trace(const Trace& Tr)
 {
-	trace.assign(tr.trace.begin(), tr.trace.end());
+	trace.assign(Tr.trace.begin(), Tr.trace.end());
 	for (auto i = trace.begin(); i != trace.end(); i++)
-		std::get<2>(*i) = NoFoods;
+		std::get<2>(*i) = No_Foods;
 }
 
-Trace& Trace::operator=(const Trace& tr)
+Trace& Trace::operator=(const Trace& Tr)
 {
-	if (&tr == this)
+	if (&Tr == this)
 		return *this;
-	trace.assign(tr.trace.begin(), tr.trace.end());
+	trace.assign(Tr.trace.begin(), Tr.trace.end());
 	return *this;
 
 }
 
-double Food::reduceFood()
+double Food::Reduce_Food()
 {
-	if (count >= 5)
+	if (Count >= 5)
 	{
-		count -= 5;
+		Count -= 5;
 		return 5.0;
 	}
 	else
 	{
-		double temp = count;
-		count = 0;
-		return temp;
+		double Temp = Count;
+		Count = 0;
+		return Temp;
 	}
 }
 
-void Food::reSize()
+void Food::Re_Size()
 {
-	size++;
+	Size++;
 }
 
-bool Food::atFood(double x_given, double y_given)
+bool Food::At_Food(double X_Given, double Y_Given)
 {
-	if (x == x_given && y == y_given)
+	if (X == X_Given && Y == Y_Given)
 		return true;
 	else
 		return false;
 }
 
-void Nest::take(double count_given)
+void Nest::Take(double Count_Given)
 {
-	count += count_given;
+	Count += Count_Given;
 }
 
 Ant::~Ant()
 {
-	delete traked_nest;
-	delete traked_trace;
+	delete Traked_Nest;
+	delete Traked_Trace;
 }
 

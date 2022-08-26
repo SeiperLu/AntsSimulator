@@ -8,6 +8,5 @@
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
 
-GLuint loadBMP_custom(const char* imagepath);
-GLuint loadDDS(const char* imagepath);
-GLuint CreateTextue(const std::string& path);
+
+GLuint CreateTextue(const std::string& Path);
