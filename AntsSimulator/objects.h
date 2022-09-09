@@ -9,8 +9,8 @@
 #include <utility>
 
 // enum class jest lpszy niz zwykly enum
-enum { No_Foods, Foods };
 
+enum class Food_Status { No_Foods, Foods };
 // jedna para h+cpp dla klasy
 class Trace
 {
@@ -79,16 +79,14 @@ public:
 	~Ant();
 private:
     // enum class
-	enum { No_Carrying, Carrying };
-
+	enum class Carrying_Status { No_Carrying, Carrying };
 
 	double X;
 	double Y;
-	int Carry;
+	Carrying_Status Carry;
 	double Food;
     //unique ptr
 	Trace* Traked_Trace;
 	Nest* Traked_Nest;
 };
 
-// wiecej konsekwencji w pisaniu

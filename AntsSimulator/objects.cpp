@@ -10,9 +10,9 @@ Ant::Ant(std::vector<Trace>& Traces,Nest &Ne)
 {
 	X = 0;
 	Y = 0;
-    Carry = No_Carrying;
+    Carry = Carrying_Status::No_Carrying;
 	Food = 0;
-	Traked_Trace = new Trace(X, Y, No_Foods);
+	Traked_Trace = new Trace(X, Y, (int)Food_Status::No_Foods);
 	Traces.push_back(*Traked_Trace);
 	Traked_Nest = new Nest();
 	*Traked_Nest = Ne;
@@ -22,9 +22,9 @@ Ant::Ant(int X_Given, int Y_Given, std::vector<Trace>& Traces, Nest &Ne)
 {
 	X = Y_Given;
 	Y = Y_Given;
-    Carry = No_Carrying;
+    Carry = Carrying_Status::No_Carrying;
 	Food = 0;
-	Traked_Trace = new Trace(X, Y, No_Foods);
+	Traked_Trace = new Trace(X, Y, (int)Food_Status::No_Foods);
 	Traces.push_back(*Traked_Trace);
 	Traked_Nest = new Nest();
 	*Traked_Nest = Ne;
@@ -33,7 +33,7 @@ Ant::Ant(int X_Given, int Y_Given, std::vector<Trace>& Traces, Nest &Ne)
 
 void Ant::Take_Food(class Food &Fd)
 {
-    Carry = Carrying;
+    Carry = Carrying_Status::Carrying;
 	Food += Fd.Reduce_Food();
 }
 
@@ -41,7 +41,7 @@ void Ant::Give_Food()
 {
 	Traked_Nest->Take(Food);
 	Food = 0;
-    Carry = No_Carrying;
+    Carry = Carrying_Status::No_Carrying;
 }
 
 void Ant::move(std::vector<Trace> &Traces, std::vector<class Food> &foods)
@@ -52,11 +52,11 @@ void Ant::move(std::vector<Trace> &Traces, std::vector<class Food> &foods)
 	std::uniform_int_distribution<> Distr(-2, 2);
     Shift_X = Distr(gen);
     Shift_Y = Distr(gen);
-	if (Carrying == No_Carrying)
+	if (Carry == Carrying_Status::No_Carrying)
 	{
-		if (Traked_Trace->Is_Path_To_Food(X, Y, Foods))
+		if (Traked_Trace->Is_Path_To_Food(X, Y, (int)Food_Status::Foods))
 		{
-			std::pair<double, double> Next_Coordinates = Traked_Trace->Next(X, Y, Foods);
+			std::pair<double, double> Next_Coordinates = Traked_Trace->Next(X, Y, (int)Food_Status::Foods);
 			X = Next_Coordinates.first;
 			Y = Next_Coordinates.second;
 			return;
@@ -68,13 +68,13 @@ void Ant::move(std::vector<Trace> &Traces, std::vector<class Food> &foods)
 				if (it->At_Food(X, Y))
 				{
 					Take_Food(*it);
-					Traked_Trace->Change_Mark(X, Y,Foods);
+					Traked_Trace->Change_Mark(X, Y, (int)Food_Status::Foods);
 					return;
 				}
 			}
 			for (auto it = Traces.begin(); it != Traces.end(); it++)
 			{
-				if (it->Is_Path_To_Food(X, Y, Foods))
+				if (it->Is_Path_To_Food(X, Y, (int)Food_Status::Foods))
 				{
 					*Traked_Trace = *it;
 					return;
@@ -89,12 +89,12 @@ void Ant::move(std::vector<Trace> &Traces, std::vector<class Food> &foods)
 	}
 	else
 	{
-		if (Traked_Trace->Is_Path_To_Nest(X, Y, Foods))
+		if (Traked_Trace->Is_Path_To_Nest(X, Y, (int)Food_Status::Foods))
 		{
-			std::pair<double, double> Next_Coordinates = Traked_Trace->Previous(X, Y, Foods);
+			std::pair<double, double> Next_Coordinates = Traked_Trace->Previous(X, Y, (int)Food_Status::Foods);
 			X = Next_Coordinates.first;
 			Y = Next_Coordinates.second;
-			Traked_Trace->Change_Mark(X, Y, Foods);
+			Traked_Trace->Change_Mark(X, Y, (int)Food_Status::Foods);
 			return;
 		}
 		else
@@ -114,26 +114,26 @@ double Ant::Ant_Y()
 
 Trace::Trace(double X, double Y, int Food)
 {
-	if(Food == No_Foods || Food == Foods)
+	if(Food == (int)Food_Status::No_Foods || Food == (int)Food_Status::Foods)
 		trace.push_back(std::make_tuple(X, Y, Food));
 	else
-		trace.push_back(std::make_tuple(X, Y, No_Foods));
+		trace.push_back(std::make_tuple(X, Y, (int)Food_Status::No_Foods));
 }
 
 void Trace::Add(double X, double Y)
 {
-	trace.push_back(std::make_tuple(X, Y, No_Foods));
+	trace.push_back(std::make_tuple(X, Y, (int)Food_Status::No_Foods));
 }
 
 void Trace::Change_Mark(double X, double Y, int Trace_Type)
 {
-	auto it = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, No_Foods));
+	auto it = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, (int)Food_Status::No_Foods));
 	if (it != trace.end())
 	{
 		*it = std::make_tuple(X, Y, Trace_Type);
 		return;
 	}
-	auto it2 = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, Foods));
+	auto it2 = std::find(trace.begin(), trace.end(), std::make_tuple(X, Y, (int)Food_Status::Foods));
 	if (it2 != trace.end())
 		*it2 = std::make_tuple(X, Y, Trace_Type);		
 }
@@ -179,7 +179,7 @@ Trace::Trace(const Trace& Tr)
 {
 	trace.assign(Tr.trace.begin(), Tr.trace.end());
 	for (auto i = trace.begin(); i != trace.end(); i++)
-		std::get<2>(*i) = No_Foods;
+		std::get<2>(*i) = (int)Food_Status::No_Foods;
 }
 
 Trace& Trace::operator=(const Trace& Tr)
