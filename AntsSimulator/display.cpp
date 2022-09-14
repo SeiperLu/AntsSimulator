@@ -1,5 +1,8 @@
 #include "texture_load.h"
-#include "objects.h"
+#include "ant.h"
+#include "nest.h"
+#include "trace.h"
+#include "food.h"
 
 #include <cstdlib>
 #include <GL/glew.h>

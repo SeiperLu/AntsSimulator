@@ -8,11 +8,18 @@ conan_basic_setup()
 
 add_executable (Ants 
 "AntsSimulator/display.cpp" 
-"AntsSimulator/objects.cpp" 
 "AntsSimulator/controls.cpp" 
 "AntsSimulator/shaders.cpp" 
 "AntsSimulator/texture_load.h" 
-"AntsSimulator/texture_load.cpp")
+"AntsSimulator/texture_load.cpp"
+"AntsSimulator/ant.cpp"
+"AntsSimulator/ant.h"
+"AntsSimulator/food.cpp"
+"AntsSimulator/food.h"
+"AntsSimulator/nest.cpp"
+"AntsSimulator/nest.h"
+"AntsSimulator/trace.cpp"
+"AntsSimulator/trace.h")
 
 # TODO: Dodaj testy i zainstaluj elementy docelowe w razie potrzeby.
 target_link_libraries(Ants ${CONAN_LIBS})
