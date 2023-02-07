@@ -3,7 +3,7 @@
 #include "nest.h"
 #include "trace.h"
 #include "food.h"
-
+#include <iostream>
 #include <cstdlib>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -41,7 +41,7 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
 	GLFWwindow* Window;
-	Window = glfwCreateWindow(1920, 1080, "Ant Simulator", nullptr, nullptr);
+	Window = glfwCreateWindow(2560, 1440, "Ant Simulator", nullptr, nullptr);
 	if (Window == nullptr)
 	{
 		std::cerr << "Failed to open GLFW window, If you have an Intel GPU, they are not compatible with OpenGL 3.3.";
@@ -123,17 +123,15 @@ int main() {
 	
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glfwSetCursorPos(Window, 1920 / 2, 1080 / 2);
+	glfwSetCursorPos(Window, 2560 / 2, 1440 / 2);
 	glfwSetInputMode(Window, GLFW_STICKY_KEYS, GL_TRUE);
 
 	mat4 Ant_Model = mat4(1.0f);
 	mat4 View = mat4(1.0f);
 	mat4 Projection;
 
-	//ant_model = glm::rotate(ant_model, glm::radians(-45.0f), vec3(1.0f, 0.0f, 0.0f));
-	//ant_model = glm::scale(ant_model, glm::vec3(0.2, 0.2, 0.2));
-	View = translate(View, vec3(0.0f, 0.0f, -3.0f));
-	Projection = glm::perspective(glm::radians(45.0f), 1920.0f / 1080.0f, 0.1f, 100.0f);
+	View = glm::lookAt(vec3(0, 0, 3), vec3(0, 0, 0), vec3(0, 1, 0));
+	Projection = glm::perspective(glm::radians(45.0f), 2560.0f / 1440.0f, 0.1f, 10000.0f);
 
 	GLuint Model_Location = glGetUniformLocation(Program_ID, "model");
 	GLuint View_Loaction = glGetUniformLocation(Program_ID, "view");
@@ -145,18 +143,28 @@ int main() {
 	Nest Nest;
 
 	Ant Ants[] = {
-		//Ant(240.0,700.0,traces,nest),
-		Ant(970.0,700.0,Traces,Nest),
-		//Ant(240.0,380.0,traces,nest),
-		Ant(970.0,380.0,Traces,Nest)
+		Ant(1500.0,700.0,45.0,Traces,Nest),
+		Ant(970.0,700.0,135.0,Traces,Nest),
+		Ant(2000.0,380.0,225.0,Traces,Nest),
+		Ant(970.0,380.0,315.0,Traces,Nest),
+		Ant(1100.0,380.0,90.0,Traces,Nest),
+		Ant(1150.0,400.0,125.0,Traces,Nest),
+		Ant(1200.0,420.0,160.0,Traces,Nest),
+		Ant(1250.0,440.0,195.0,Traces,Nest),
+		Ant(1350.0,460.0,220.0,Traces,Nest),
+		Ant(1400.0,480.0,255.0,Traces,Nest),
+		Ant(1450.0,500.0,290.0,Traces,Nest),
 	};
-
+	std::vector<Food>Foods; 
+	Foods.push_back(Food(1800.0, 800.0, 15, 50));
+	
 
 
 
 	vec3 Nest_Position(0.0f, 0.0f, 0.0f);
 	mat4 Nest_Model = mat4(1.0f);
 	Nest_Model = glm::scale(Nest_Model, vec3(0.5, 0.5, 0.5));
+
 
 	do
 	{
@@ -169,23 +177,24 @@ int main() {
 		glUniformMatrix4fv(Model_Location, 1, GL_FALSE, glm::value_ptr(Nest_Model));
 		glUniformMatrix4fv(View_Loaction, 1, GL_FALSE, glm::value_ptr(View));
 		glUniformMatrix4fv(Projection_Loaction, 1, GL_FALSE, glm::value_ptr(Projection));
-		
+
 		glBindTexture(GL_TEXTURE_2D, Texture_Nest);
 		glBindVertexArray(VAO_Nest);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glBindTexture(GL_TEXTURE_2D, Texture_Ants);
 		glBindVertexArray(VAO_Ants);
-		
-		for (int i = 0; i < 2; i++)
+
+		for (int i = 0; i < sizeof(Ants) / sizeof(Ant); i++)
 		{
 			Ant_Model = mat4(1.0f);
-			Ant_Model = translate(Ant_Model, Ants_Cordinats_To_Vec3(Ants[i].Ant_X(), Ants[i].Ant_Y()));
+			Ant_Model = translate(Ant_Model, Ants_Cordinats_To_Vec3(Ants[i].GetX(), Ants[i].GetY()));
 			Ant_Model = glm::scale(Ant_Model, glm::vec3(0.2, 0.2, 0.2));
 			glUniformMatrix4fv(Model_Location, 1, GL_FALSE, glm::value_ptr(Ant_Model));
 			glDrawArrays(GL_TRIANGLES, 0, 6);
+			Ants[i].Move(Traces,Foods);
 		}
-
+		
 		glfwSwapBuffers(Window);
 	} while (glfwGetKey(Window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(Window) == 0);
 
@@ -196,20 +205,15 @@ int main() {
 vec3 Ants_Cordinats_To_Vec3(double X_Ant, double Y_Ant)
 {
 	float X;
-	float Y;
-	if (X_Ant < 960.0)
-		X = -1.0 + (X_Ant / 960.0);
+	float Y; 
+	if (X_Ant < 1280.0)
+		X = -1.0 + (X_Ant / 1280.0);
 	else
-	{
-		X = 1.0 -(X_Ant-960.0) / 960.0;
-	}
+		X = (X_Ant)/1280.0 - 1;
 
-	if (1080.0 / Y_Ant > 2.0)
-		Y = -1.0 + (Y_Ant / 540.0);
+	if (Y_Ant < 720.0)
+		Y = -1.0 + (Y_Ant / 720.0);
 	else
-	{
-		Y = (Y_Ant - 540.0) / 540.0;
-	}
-
+		Y = Y_Ant/720.0 - 1;
 	return vec3(X, Y, 0.0f);
 }
