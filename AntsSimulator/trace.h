@@ -1,25 +1,29 @@
 #pragma once
 #include <vector>
 #include <tuple>
+enum class FoodStatus {
+	NoFood,
+	Food
+};
 
 class Trace
 {
 public:
-	Trace(double X, double Y, int Food);
+	Trace(double X, double Y, FoodStatus Food);
 	Trace(const Trace& Tr);
 	Trace& operator=(const Trace& Tr);
 	Trace(Trace&&) = default;
 	Trace& operator=(Trace&&) = default;
 
 	void Add(double X, double Y);
-	void Change_Mark(double X, double Y, int Trace_Type);
-	bool Is_Path_To_Nest(double X, double Y, int On_Food) const;
-	bool Is_Path_To_Food(double X, double Y, int On_Food) const;
-	std::pair<double, double> Next(double X, double Y, int On_Food) const;
-	std::pair<double, double> Previous(double X, double Y, int On_Food) const;
-	std::pair<double, double> Near_Path_To_Food(double X, double Y, int On_Food) const;
+	void Change_Mark(double X, double Y, FoodStatus Trace_Type);
+	bool Is_Path_To_Nest(double X, double Y, FoodStatus On_Food) const;
+	bool Is_Path_To_Food(double X, double Y, FoodStatus On_Food) const;
+	std::pair<double, double> Next(double X, double Y, FoodStatus On_Food) const;
+	std::pair<double, double> Previous(double X, double Y, FoodStatus On_Food) const;
+	std::pair<double, double> Near_Path_To_Food(double X, double Y, FoodStatus On_Food) const;
 	void Remove_Last();
 
 private:
-	std::vector<std::tuple<double, double, int>> trace;
+	std::vector<std::tuple<double, double, FoodStatus>> trace;
 };

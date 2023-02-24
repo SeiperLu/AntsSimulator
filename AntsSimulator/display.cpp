@@ -40,22 +40,20 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
-	GLFWwindow* Window;
-	Window = glfwCreateWindow(2560, 1440, "Ant Simulator", nullptr, nullptr);
-	if (Window == nullptr)
+	GLFWwindow* window = glfwCreateWindow(2560, 1440, "Ant Simulator", glfwGetPrimaryMonitor(), nullptr);
+	if (window == nullptr)
 	{
 		std::cerr << "Failed to open GLFW window, If you have an Intel GPU, they are not compatible with OpenGL 3.3.";
 		glfwTerminate();
 		return -1;
 	}
 
-	glfwMakeContextCurrent(Window);
+	glfwMakeContextCurrent(window);
 	if (glewInit() != GLEW_OK)
 	{
 		std::cerr << "Failed to initialize GLEW\n";
 		return -1;
 	}
-
 	const GLfloat G_Vertex_Buffer_Data_Ants[] = {
 		-0.5f, -0.5f, 0.0f,		0.0f, 1.0f - 0.0f,
 		-0.5f, 0.5f, 0.0f,		0.0f, 1.0f - 1.0f,
@@ -123,8 +121,8 @@ int main() {
 	
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	glfwSetCursorPos(Window, 2560 / 2, 1440 / 2);
-	glfwSetInputMode(Window, GLFW_STICKY_KEYS, GL_TRUE);
+	glfwSetCursorPos(window, 2560 / 2, 1440 / 2);
+	glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
 	mat4 Ant_Model = mat4(1.0f);
 	mat4 View = mat4(1.0f);
@@ -156,7 +154,7 @@ int main() {
 		Ant(1450.0,500.0,290.0,Traces,Nest),
 	};
 	std::vector<Food>Foods; 
-	Foods.push_back(Food(1800.0, 800.0, 15, 50));
+	Foods.push_back(Food(1800.0, 800.0, 15, 50.0));
 	
 
 
@@ -184,19 +182,18 @@ int main() {
 
 		glBindTexture(GL_TEXTURE_2D, Texture_Ants);
 		glBindVertexArray(VAO_Ants);
-
-		for (int i = 0; i < sizeof(Ants) / sizeof(Ant); i++)
+		for (auto& ant : Ants)
 		{
 			Ant_Model = mat4(1.0f);
-			Ant_Model = translate(Ant_Model, Ants_Cordinats_To_Vec3(Ants[i].GetX(), Ants[i].GetY()));
+			Ant_Model = translate(Ant_Model, Ants_Cordinats_To_Vec3(ant.GetX(), ant.GetY()));
 			Ant_Model = glm::scale(Ant_Model, glm::vec3(0.2, 0.2, 0.2));
 			glUniformMatrix4fv(Model_Location, 1, GL_FALSE, glm::value_ptr(Ant_Model));
 			glDrawArrays(GL_TRIANGLES, 0, 6);
-			Ants[i].Move(Traces,Foods);
+			ant.Move(Traces,Foods);
 		}
 		
-		glfwSwapBuffers(Window);
-	} while (glfwGetKey(Window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(Window) == 0);
+		glfwSwapBuffers(window);
+	} while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
 
 	glfwTerminate();
 }
