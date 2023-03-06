@@ -21,21 +21,22 @@ public:
 	void GiveFood();
 	double GetX() const;
 	double GetY() const;
-
+	float GetTheta() const;
 private:
 	enum class CarryingStatus { 
 		NotCarrying, 
 		Carrying 
 	};
-
+	double Theta_Shift_Calculation(double x1,double y1,double x2, double y2) const;
 	double x;
 	double y;
-	double theta;/*starting phase angel*/
+	double theta;/*phase angel*/
 	double food;
 
 	std::pair<double, double> nextCoordinates;
 	std::pair<double, double> nearTrace;
 	int i;
+	int nextThetaShift;
 	double thetaShift;
 	double magnitude;
 	double shiftX;

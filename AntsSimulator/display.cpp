@@ -12,6 +12,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define _USE_MATH_DEFINES
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -23,7 +24,7 @@ GLuint LoadShaders(const char* vertex_file_path, const char* fragment_file_path)
 void computeMatricesFromInputs(GLFWwindow* window);
 mat4 getProjectionMatrix();
 mat4 getViewMatrix();
-vec3 Ants_Cordinats_To_Vec3(double x, double y);
+vec3 XY_Coordinates_To_NDC_Coordinates(double x, double y);
 
 
 int main() {
@@ -75,12 +76,23 @@ int main() {
 		0.5f, -0.5f,0.0f,		1.0f, 1.0f - 0.0f,
 	};
 
+	const GLfloat G_Vertex_Buffer_Data_Food[] = {
+		-0.5f, -0.5f, 0.0f,		0.0f, 1.0f - 0.0f,
+		-0.5f, 0.5f, 0.0f,		0.0f, 1.0f - 1.0f,
+		 0.5f, -0.5f, 0.0f,		1.0f, 1.0f - 0.0f,
+
+		-0.5f, 0.5f,0.0f,		0.0f, 1.0f - 1.0f,
+		0.5f, 0.5f, 0.0f,		1.0f, 1.0f - 1.0f,
+		0.5f, -0.5f,0.0f,		1.0f, 1.0f - 0.0f,
+	};
+
 	
 	GLuint Program_ID = LoadShaders("Resources//SimpleVertexShader.vertexshader",
                                    "Resources//SimpleFragmentShader.fragmentshader");
 	
 	GLuint Texture_Ants = CreateTextue("Resources//ant.jpg");
 	GLuint Texture_Nest = CreateTextue("Resources//nest.jpg");
+	GLuint Texture_Food = CreateTextue("Resources//food.jpg");
 	GLuint TextureLocation = glGetUniformLocation(Program_ID, "myTextureSampler");
 	
 	GLuint VAO_Ants;
@@ -104,10 +116,26 @@ int main() {
 	glGenVertexArrays(1, &VAO_Nest);
 	glBindVertexArray(VAO_Nest);
 	
-	GLuint Vertex_Buffer_nest;
-	glGenBuffers(1, &Vertex_Buffer_nest);
-	glBindBuffer(GL_ARRAY_BUFFER, Vertex_Buffer_nest);
+	GLuint Vertex_Buffer_Nest;
+	glGenBuffers(1, &Vertex_Buffer_Nest);
+	glBindBuffer(GL_ARRAY_BUFFER, Vertex_Buffer_Nest);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(G_Vertex_Buffer_Data_Nest), G_Vertex_Buffer_Data_Nest, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+
+
+	GLuint VAO_Food;
+	glGenVertexArrays(1, &VAO_Food);
+	glBindVertexArray(VAO_Food);
+
+	GLuint Vertex_Buffer_Food;
+	glGenBuffers(1, &Vertex_Buffer_Food);
+	glBindBuffer(GL_ARRAY_BUFFER, Vertex_Buffer_Food);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(G_Vertex_Buffer_Data_Food), G_Vertex_Buffer_Data_Food, GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
@@ -154,7 +182,7 @@ int main() {
 		Ant(1450.0,500.0,290.0,Traces,Nest),
 	};
 	std::vector<Food>Foods; 
-	Foods.push_back(Food(1800.0, 800.0, 15, 50.0));
+	Foods.push_back(Food(2200.0, 1100.0, 70, 500.0));
 	
 
 
@@ -162,8 +190,11 @@ int main() {
 	vec3 Nest_Position(0.0f, 0.0f, 0.0f);
 	mat4 Nest_Model = mat4(1.0f);
 	Nest_Model = glm::scale(Nest_Model, vec3(0.5, 0.5, 0.5));
+	
 
-
+	mat4 Food_Model = mat4(1.0f);
+	Food_Model = translate(Food_Model, XY_Coordinates_To_NDC_Coordinates(2200.0,1100.0));
+	Food_Model = glm::scale(Food_Model, glm::vec3(0.1f, 0.1f, 0.1f));
 	do
 	{
 		glfwPollEvents();
@@ -180,16 +211,22 @@ int main() {
 		glBindVertexArray(VAO_Nest);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
+		glUniformMatrix4fv(Model_Location, 1, GL_FALSE, glm::value_ptr(Food_Model));
+		glBindTexture(GL_TEXTURE_2D, Texture_Food);
+		glBindVertexArray(VAO_Food);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 		glBindTexture(GL_TEXTURE_2D, Texture_Ants);
 		glBindVertexArray(VAO_Ants);
 		for (auto& ant : Ants)
 		{
 			Ant_Model = mat4(1.0f);
-			Ant_Model = translate(Ant_Model, Ants_Cordinats_To_Vec3(ant.GetX(), ant.GetY()));
-			Ant_Model = glm::scale(Ant_Model, glm::vec3(0.2, 0.2, 0.2));
+			Ant_Model = translate(Ant_Model, XY_Coordinates_To_NDC_Coordinates(ant.GetX(), ant.GetY()));
+			Ant_Model = glm::rotate(Ant_Model,glm::radians(ant.GetTheta()) - (float)M_PI_2, glm::vec3(0.0, 0.0, 1.0));
+			Ant_Model = glm::scale(Ant_Model, glm::vec3(0.1, 0.1, 0.1));
 			glUniformMatrix4fv(Model_Location, 1, GL_FALSE, glm::value_ptr(Ant_Model));
 			glDrawArrays(GL_TRIANGLES, 0, 6);
-			ant.Move(Traces,Foods);
+			ant.Move(Traces, Foods);
 		}
 		
 		glfwSwapBuffers(window);
@@ -199,7 +236,7 @@ int main() {
 }
 
 
-vec3 Ants_Cordinats_To_Vec3(double X_Ant, double Y_Ant)
+vec3 XY_Coordinates_To_NDC_Coordinates(double X_Ant, double Y_Ant)
 {
 	float X;
 	float Y; 

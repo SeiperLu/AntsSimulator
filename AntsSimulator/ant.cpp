@@ -7,8 +7,9 @@ namespace
 {
 	std::random_device rd;
 	std::mt19937 gen(rd());
-	std::uniform_real_distribution<> thetaDistr(-3.0, 3.0);
-	std::uniform_real_distribution<> magnitudeDistr(0.0, 2.0);
+	std::uniform_real_distribution<> thetaDistr(-7.0, 7.0);
+	std::uniform_real_distribution<> magnitudeDistr(0.0, 5.0);
+	std::uniform_int_distribution<> nextThetaShiftDistr(1, 5);
 	const double view_limit_x = 2560.0;
 	const double view_limit_y = 1400.0;
 
@@ -30,9 +31,10 @@ double CylindricalY_to_CartesianY(double magnitude, double theta)
 Ant::Ant(std::vector<Trace> &traces, Nest& nest)
 	: x( 0 )
 	, y( 0 )
-	, theta(0)
+	, theta( 0 )
 	, status( CarryingStatus::NotCarrying )
-	, food( 0 ) {
+	, food( 0 )
+	, nextThetaShift( 3 ) {
 	traces.push_back(*std::make_unique<Trace>(x, y, FoodStatus::NoFood));
 	traceNumber = traces.size() - 1;
 	*(this->nest) = nest;
@@ -43,7 +45,8 @@ Ant::Ant(double xGiven, double yGiven,double thetaGiven, std::vector<Trace>& tra
 	, y( yGiven )
 	, theta(thetaGiven)
 	, status( CarryingStatus::NotCarrying )
-	, food( 0 ) {
+	, food( 0 ) 
+	, nextThetaShift( 3 ) {
 	traces.push_back(*std::make_unique<Trace>(x, y, FoodStatus::NoFood));
 	traceNumber = traces.size() - 1;
 	nest = std::unique_ptr<Nest>(&nest_given);
@@ -96,6 +99,7 @@ void Ant::Move(std::vector<Trace>& traces, std::vector<class Food>& foods)
 		if (traces[traceNumber].Is_Path_To_Food(x, y, FoodStatus::Food))
 		{
 			nextCoordinates = traces[traceNumber].Next(x, y, FoodStatus::Food);
+			theta = Theta_Shift_Calculation(x, y, nextCoordinates.first, nextCoordinates.second);
 			x = nextCoordinates.first;
 			y = nextCoordinates.second;
 			return;
@@ -132,8 +136,13 @@ void Ant::Move(std::vector<Trace>& traces, std::vector<class Food>& foods)
 				i++;
 			}
 		}
-		thetaShift = thetaDistr(gen);
-		theta = theta + thetaShift;
+		if (nextThetaShift == 0)
+		{
+			thetaShift = thetaDistr(gen);
+			theta = theta + thetaShift;
+			nextThetaShift = nextThetaShiftDistr(gen);
+		}
+		nextThetaShift--;
 		magnitude = magnitudeDistr(gen);
 		shiftX = CylindricalX_to_CartesianX(magnitude, theta);
 		shiftY = CylindricalY_to_CartesianY(magnitude, theta);
@@ -151,6 +160,7 @@ void Ant::Move(std::vector<Trace>& traces, std::vector<class Food>& foods)
 	{
 		if (traces[traceNumber].Is_Path_To_Nest(x, y, FoodStatus::Food)) {
 			nextCoordinates = traces[traceNumber].Previous(x, y, FoodStatus::Food);
+			theta = Theta_Shift_Calculation(x, y, nextCoordinates.first, nextCoordinates.second);
 			x = nextCoordinates.first;
 			y = nextCoordinates.second;
 			traces[traceNumber].Change_Mark(x, y, FoodStatus::Food);
@@ -169,4 +179,17 @@ double Ant::GetX() const
 double Ant::GetY() const
 {
 	return y;
+}
+
+float Ant::GetTheta() const
+{
+	return theta;
+}
+
+double Ant::Theta_Shift_Calculation(double x1, double y1, double x2, double y2) const
+{
+	double shiftX = x2 - x1;
+	double shiftY = y2 - y1;
+	double theta = atan2(shiftY,shiftX) * (180.0 / M_PI);
+	return theta;
 }
