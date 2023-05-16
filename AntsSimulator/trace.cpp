@@ -1,5 +1,6 @@
 #include "trace.h"
-
+#include "food.h"
+#include <iostream>
 Trace::Trace(double X, double Y, FoodStatus Food)
 {
 	if (Food == FoodStatus::NoFood || Food == FoodStatus::Food)
@@ -44,12 +45,18 @@ bool Trace::Is_Path_To_Food(double X, double Y, FoodStatus On_Food) const
 		return false;
 }
 
-std::pair<double, double> Trace::Near_Path_To_Food(double X, double Y, FoodStatus On_Food) const
+std::pair<double, double> Trace::Near_Path_To_Food(double X, double Y, FoodStatus On_Food, std::vector<class Food>& foods) const
 {
+	if(std::get<0>(*(trace.end()-1)) == X && std::get<1>(*(trace.end() - 1)) == Y)
+		return std::pair<double, double>(0.0, 0.0);
 	for (auto it = trace.begin(); it != trace.end(); it++)
 	{
-		if (std::get<2>(*it) == On_Food && X <= std::get<0>(*it) + 15.0 && X >= std::get<0>(*it) - 15.0 && Y <= std::get<1>(*it) + 15.0 && Y >= std::get<1>(*it) - 15.0)
-			return std::pair<double, double>(std::get<0>(*it), std::get<1>(*it));
+		if (std::get<2>(*it) == On_Food && X < std::get<0>(*it) + 15.0 && X > std::get<0>(*it) - 15.0 && Y < std::get<1>(*it) + 15.0 && Y > std::get<1>(*it) - 15.0)
+			for (auto itFood = foods.begin(); itFood != foods.end(); it++)
+			{
+				if (itFood->At_Food(std::get<0>(*(trace.end() - 1)), std::get<1>(*(trace.end() - 1))))
+					return std::pair<double, double>(std::get<0>(*it), std::get<1>(*it));
+			}
 	}
 	return std::pair<double,double>(0.0,0.0);
 }
@@ -88,4 +95,10 @@ Trace& Trace::operator=(const Trace& Tr)
 		return *this;
 	trace.assign(Tr.trace.begin(), Tr.trace.end());
 	return *this;
+}
+
+void Trace::Change_Mark_All_Trace(FoodStatus Trace_Type)
+{
+	for (auto it = trace.begin(); it != trace.end(); it++)
+		std::get<2>(*it) = Trace_Type;
 }

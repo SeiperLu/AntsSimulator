@@ -2,6 +2,7 @@
 #define _USE_MATH_DEFINES
 #include<math.h>
 #include <tuple>
+#include <iostream>
 
 namespace
 {
@@ -80,8 +81,9 @@ Ant& Ant::operator=(const Ant& other)
 
 void Ant::TakeFood(class Food& Fd)
 {
-	status = CarryingStatus::Carrying;
 	food += Fd.Reduce_Food();
+	if (food > 0)
+		status = CarryingStatus::Carrying;
 }
 
 void Ant::GiveFood()
@@ -112,25 +114,29 @@ void Ant::Move(std::vector<Trace>& traces, std::vector<class Food>& foods)
 				{
 					TakeFood(*it);
 					if (food < 5)
+					{
 						foods.erase(it);
+						std::cout << "Jedzenie usuniete!\n";
+					}
 					traces[traceNumber].Change_Mark(x, y, FoodStatus::Food);
 					return;
 				}
 			}
-			i = 0;
+			int i = 0;
 			for (auto it = traces.begin(); it != traces.end(); it++)
 			{
 				if (i == traceNumber)
 				{
 					i++;
 					continue;
-				}	
-				nearTrace = it->Near_Path_To_Food(x, y, FoodStatus::Food);
-				if (nearTrace != std::pair<double,double>(0.0,0.0)) 
+				}
+				nearTrace = it->Near_Path_To_Food(x, y, FoodStatus::Food, foods);
+				if (nearTrace != std::pair<double, double>(0.0, 0.0))
 				{
-					traceNumber = i;
+					traces[traceNumber] = traces[i];
 					x = nearTrace.first;
 					y = nearTrace.second;
+					std::cout << "Sciezka zmieniona\n";
 					return;
 				}
 				i++;

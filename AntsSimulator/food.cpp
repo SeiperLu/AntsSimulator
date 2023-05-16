@@ -11,7 +11,11 @@ double Food::Reduce_Food()
 		return 5.0;
 	}
 	else
-		return Count;
+	{
+		double temp = Count;
+		Count = 0.0;
+		return temp;
+	}
 }
 
 void Food::Re_Size()
@@ -19,8 +23,8 @@ void Food::Re_Size()
 	Size++;
 }
 
-bool Food::At_Food(double X_Given, double Y_Given)
+bool Food::At_Food(double X_Given, double Y_Given, double addedRange)
 {
-	return (X_Given <= X + Size && X_Given >= X - Size && Y_Given <= Y + Size && Y_Given >= Y - Size);
+	return (X_Given <= X + Size +addedRange && X_Given >= X - Size - addedRange && Y_Given <= Y + Size + addedRange && Y_Given >= Y - Size - addedRange);
 		
 }

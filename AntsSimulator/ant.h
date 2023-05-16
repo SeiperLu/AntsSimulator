@@ -35,7 +35,6 @@ private:
 
 	std::pair<double, double> nextCoordinates;
 	std::pair<double, double> nearTrace;
-	int i;
 	int nextThetaShift;
 	double thetaShift;
 	double magnitude;

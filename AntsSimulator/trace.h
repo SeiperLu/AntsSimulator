@@ -21,9 +21,9 @@ public:
 	bool Is_Path_To_Food(double X, double Y, FoodStatus On_Food) const;
 	std::pair<double, double> Next(double X, double Y, FoodStatus On_Food) const;
 	std::pair<double, double> Previous(double X, double Y, FoodStatus On_Food) const;
-	std::pair<double, double> Near_Path_To_Food(double X, double Y, FoodStatus On_Food) const;
+	std::pair<double, double> Near_Path_To_Food(double X, double Y, FoodStatus On_Food, std::vector<class Food>& foods) const;
+	void Change_Mark_All_Trace(FoodStatus Trace_Type);
 	void Remove_Last();
-
 private:
 	std::vector<std::tuple<double, double, FoodStatus>> trace;
 };

@@ -182,7 +182,7 @@ int main() {
 		Ant(1450.0,500.0,290.0,Traces,Nest),
 	};
 	std::vector<Food>Foods; 
-	Foods.push_back(Food(2200.0, 1100.0, 70, 500.0));
+	Foods.push_back(Food(2200.0, 1100.0, 70, 100.0));
 	
 
 
@@ -190,8 +190,6 @@ int main() {
 	vec3 Nest_Position(0.0f, 0.0f, 0.0f);
 	mat4 Nest_Model = mat4(1.0f);
 	Nest_Model = glm::scale(Nest_Model, vec3(0.5, 0.5, 0.5));
-	
-
 	mat4 Food_Model = mat4(1.0f);
 	Food_Model = translate(Food_Model, XY_Coordinates_To_NDC_Coordinates(2200.0,1100.0));
 	Food_Model = glm::scale(Food_Model, glm::vec3(0.1f, 0.1f, 0.1f));
