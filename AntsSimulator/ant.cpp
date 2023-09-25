@@ -12,7 +12,7 @@ namespace
 	std::uniform_real_distribution<> magnitudeDistr(0.0, 5.0);
 	std::uniform_int_distribution<> nextThetaShiftDistr(1, 5);
 	const double view_limit_x = 2560.0;
-	const double view_limit_y = 1400.0;
+	const double view_limit_y = 1440.0;
 
 }
 
@@ -114,10 +114,7 @@ void Ant::Move(std::vector<Trace>& traces, std::vector<class Food>& foods)
 				{
 					TakeFood(*it);
 					if (food < 5)
-					{
 						foods.erase(it);
-						std::cout << "Jedzenie usuniete!\n";
-					}
 					traces[traceNumber].Change_Mark(x, y, FoodStatus::Food);
 					return;
 				}
@@ -136,7 +133,6 @@ void Ant::Move(std::vector<Trace>& traces, std::vector<class Food>& foods)
 					traces[traceNumber] = traces[i];
 					x = nearTrace.first;
 					y = nearTrace.second;
-					std::cout << "Sciezka zmieniona\n";
 					return;
 				}
 				i++;
@@ -154,6 +150,8 @@ void Ant::Move(std::vector<Trace>& traces, std::vector<class Food>& foods)
 		shiftY = CylindricalY_to_CartesianY(magnitude, theta);
 		if (x + shiftX >= view_limit_x || x + shiftX <= 0.0 || y + shiftY >= view_limit_y || y + shiftY <= 0.0)
 		{
+			//std::cout << "Odbicie x: " << x << "\ty: " << y << std::endl;
+			//std::cout << "Shift x: " << shiftX << "\tshifty: " << shiftY << std::endl;
 			theta += 90.0;
 			shiftX = CylindricalX_to_CartesianX(magnitude, theta);
 			shiftY = CylindricalY_to_CartesianY(magnitude, theta);

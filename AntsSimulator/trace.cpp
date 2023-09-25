@@ -52,7 +52,7 @@ std::pair<double, double> Trace::Near_Path_To_Food(double X, double Y, FoodStatu
 	for (auto it = trace.begin(); it != trace.end(); it++)
 	{
 		if (std::get<2>(*it) == On_Food && X < std::get<0>(*it) + 15.0 && X > std::get<0>(*it) - 15.0 && Y < std::get<1>(*it) + 15.0 && Y > std::get<1>(*it) - 15.0)
-			for (auto itFood = foods.begin(); itFood != foods.end(); it++)
+			for (auto itFood = foods.begin(); itFood != foods.end(); itFood++)
 			{
 				if (itFood->At_Food(std::get<0>(*(trace.end() - 1)), std::get<1>(*(trace.end() - 1))))
 					return std::pair<double, double>(std::get<0>(*it), std::get<1>(*it));
@@ -95,10 +95,4 @@ Trace& Trace::operator=(const Trace& Tr)
 		return *this;
 	trace.assign(Tr.trace.begin(), Tr.trace.end());
 	return *this;
-}
-
-void Trace::Change_Mark_All_Trace(FoodStatus Trace_Type)
-{
-	for (auto it = trace.begin(); it != trace.end(); it++)
-		std::get<2>(*it) = Trace_Type;
 }
